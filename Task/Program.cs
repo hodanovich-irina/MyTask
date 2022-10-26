@@ -1,2 +1,7 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+﻿using Task;
+var filePath = @"..\..\..\Files";
+var results = Reader.FindWordCount(filePath);
+foreach (var result in results) 
+{
+    Console.WriteLine(result);
+}
