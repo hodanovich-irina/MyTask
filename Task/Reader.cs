@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection.PortableExecutable;
@@ -27,17 +28,9 @@ namespace Task
             return resList;
         }
         private static List<string> ReadAllFileName(string folderName)
-        {
-            var fileList = new List<string>();
-            if (Directory.Exists(folderName))
-            {
-                string[] files = Directory.GetFiles(folderName);
-                foreach (var s in files)
-                {
-                    fileList.Add(s);
-                }
-            }
-            return fileList;
+        {            
+            var fileList = Directory.EnumerateFiles(folderName);
+            return fileList.ToList();
         }
 
         private static string ReadFiles(string folderName) 
