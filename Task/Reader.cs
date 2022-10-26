@@ -5,20 +5,28 @@ using System.IO;
 using System.Linq;
 using System.Reflection.PortableExecutable;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Task
 {
     public static class Reader
     {
-        public static List<string> FindWordCount(string fileName) 
+        public static List<string> FindWordCount(string fileName, string searchPattern) 
         {
             var resList = new List<string>();
-            var x = Reader.ReadFiles(fileName);
-            var allWorlds = x.Split('.', ',', '\n', ':', ';', '!', '?', '-', ' ', '\t').Where(res=>res != string.Empty);
-            foreach (var v in allWorlds)
+            var x = ReadFiles(fileName, searchPattern);
+
+            var pattern = @"\W";
+            var regex = new Regex(pattern);
+
+            var allWords = Regex.Split(x, pattern).Where(res => res != string.Empty)
+                .Select(res1 => res1.ToLower());
+
+            foreach (var v in allWords)
             {
-                var count = allWorlds.Where(x => x == v).Count();
+                var count = allWords.Where(x => x == v).Count();
                 var res = $"Слово '{v}' встречается {count} раз";
                 if (!resList.Contains(res))
                 {
@@ -27,22 +35,26 @@ namespace Task
             }
             return resList;
         }
-        private static List<string> ReadAllFileName(string folderName)
+        private static List<string> ReadAllFileName(string folderName, string searchPattern)
         {            
             var fileList = Directory.EnumerateFiles(folderName);
             return fileList.ToList();
         }
 
-        private static string ReadFiles(string folderName) 
+        private static string ReadFiles(string folderName, string searchPattern) 
         {
             var allText = "";
-            var files = ReadAllFileName(folderName);
+            var files = ReadAllFileName(folderName, searchPattern);
+
             foreach (var file in files)
             {
                 using (StreamReader reader = new StreamReader(file))
                 {
-                    string text = reader.ReadToEnd();
-                    allText += text;
+                    string? line;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        allText += line;
+                    }
                 }
             }
             return allText;
