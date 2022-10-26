@@ -10,6 +10,22 @@ namespace Task
 {
     public static class Reader
     {
+        public static List<string> FindWordCount(string fileName) 
+        {
+            var resList = new List<string>();
+            var x = Reader.ReadFiles(fileName);
+            var allWorlds = x.Split('.', ',', '\n', ':', ';', '!', '?', '-', ' ', '\t').Where(res=>res != string.Empty);
+            foreach (var v in allWorlds)
+            {
+                var count = allWorlds.Where(x => x == v).Count();
+                var res = $"Слово '{v}' встречается {count} раз";
+                if (!resList.Contains(res))
+                {
+                    resList.Add(res);
+                }
+            }
+            return resList;
+        }
         private static List<string> ReadAllFileName(string folderName)
         {
             var fileList = new List<string>();
@@ -37,23 +53,6 @@ namespace Task
                 }
             }
             return allText;
-
-        }
-        public static List<string> FindWordCount(string fileName) 
-        {
-            var resList = new List<string>();
-            var x = Reader.ReadFiles(fileName);
-            var allWorlds = x.Split('.', ',', '\n', ':', ';', '!', '?', '-', ' ', '\t');
-            foreach (var v in allWorlds)
-            {
-                var count = allWorlds.Where(x => x == v).Count();
-                var res = "Слово '" + v + "' встречается " + count + " раз";
-                if (!resList.Contains(res))
-                {
-                    resList.Add(res);
-                }
-            }
-            return resList;
         }
     }
 }
