@@ -1,8 +1,9 @@
 ﻿using Task;
+
 var filePath = @"..\..\..\Files";
 var searchPattern = "*.txt";
-var results = Reader.FindWordCount(filePath, searchPattern);
-foreach (var result in results) 
+var results = await Reader.ReadDataWithTasksAsync(filePath, searchPattern);
+foreach (var result in results)
 {
-    Console.WriteLine(result);
+    Console.WriteLine($"Слово '{result.Key}' встречается {result.Value} раз");
 }

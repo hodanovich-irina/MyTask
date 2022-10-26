@@ -1,63 +1,64 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Reflection.PortableExecutable;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
+﻿using System.Text.RegularExpressions;
 
 namespace Task
 {
     public static class Reader
     {
-        public static List<string> FindWordCount(string fileName, string searchPattern) 
-        {
-            var resList = new List<string>();
-            var x = ReadFiles(fileName, searchPattern);
+        private static Dictionary<string, int> _allData = new Dictionary<string, int>();
 
+        public async static Task<Dictionary<string, int>> ReadDataWithTasksAsync(string folderName, string searchPattern)
+        {
+            var allFiles = ReadAllFileName(folderName, searchPattern);
+            var tasks = new System.Threading.Tasks.Task[allFiles.Count];
+            for (int i = 0; i < allFiles.Count; i++)
+            {
+                tasks[i] = ReadFileAsync(allFiles[i]);
+            }
+            await System.Threading.Tasks.Task.WhenAll(tasks);
+
+            return _allData;
+        }
+
+        public static Dictionary<string, int> FindWordCountInLine(string line)
+        {
             var pattern = @"\W";
             var regex = new Regex(pattern);
 
-            var allWords = Regex.Split(x, pattern).Where(res => res != string.Empty)
-                .Select(res1 => res1.ToLower());
+            var allWords = Regex.Split(line, pattern).Where(x => x != string.Empty)
+                .Select(x => x.ToLower());
 
-            foreach (var v in allWords)
+            foreach (var word in allWords)
             {
-                var count = allWords.Where(x => x == v).Count();
-                var res = $"Слово '{v}' встречается {count} раз";
-                if (!resList.Contains(res))
+                var count = allWords.Where(x => x == word).Count();
+                if (!_allData.ContainsKey(word))
                 {
-                    resList.Add(res);
+                    _allData.Add(word, 1);
+                }
+                else
+                {
+                    _allData[word] += 1;
                 }
             }
-            return resList;
+            return _allData;
         }
+
         private static List<string> ReadAllFileName(string folderName, string searchPattern)
-        {            
-            var fileList = Directory.EnumerateFiles(folderName);
+        {
+            var fileList = Directory.EnumerateFiles(folderName, searchPattern);
             return fileList.ToList();
         }
 
-        private static string ReadFiles(string folderName, string searchPattern) 
+        private static async System.Threading.Tasks.Task ReadFileAsync(string fileName)
         {
-            var allText = "";
-            var files = ReadAllFileName(folderName, searchPattern);
-
-            foreach (var file in files)
+            using (StreamReader reader = new StreamReader(fileName))
             {
-                using (StreamReader reader = new StreamReader(file))
+                string? line;
+                while ((line = await reader.ReadLineAsync()) != null)
                 {
-                    string? line;
-                    while ((line = reader.ReadLine()) != null)
-                    {
-                        allText += line;
-                    }
+                    var res = line;
+                    FindWordCountInLine(res);
                 }
             }
-            return allText;
         }
     }
 }
