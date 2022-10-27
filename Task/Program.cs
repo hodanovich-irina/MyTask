@@ -1,6 +1,6 @@
 ﻿using Task;
 
-var filePath = @"..\..\..\Files";
+var filePath = @"..\..\..\File";
 var searchPattern = "*.txt";
 var results = await Reader.ReadDataWithTasksAsync(filePath, searchPattern);
 foreach (var result in results)

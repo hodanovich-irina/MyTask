@@ -5,7 +5,7 @@ namespace Task
     public static class Reader
     {
         private static Dictionary<string, int> _allData = new Dictionary<string, int>();
-
+        private static readonly object _lock = new object();
         public async static Task<Dictionary<string, int>> ReadDataWithTasksAsync(string folderName, string searchPattern)
         {
             var allFiles = ReadAllFileName(folderName, searchPattern);
@@ -19,7 +19,7 @@ namespace Task
             return _allData;
         }
 
-        public static Dictionary<string, int> FindWordCountInLine(string line)
+        public static void FindWordCountInLine(string line)
         {
             var pattern = @"\W";
             var regex = new Regex(pattern);
@@ -30,20 +30,26 @@ namespace Task
             foreach (var word in allWords)
             {
                 var count = allWords.Where(x => x == word).Count();
-                if (!_allData.ContainsKey(word))
+                lock (_lock)
                 {
-                    _allData.Add(word, 1);
-                }
-                else
-                {
-                    _allData[word] += 1;
+                    if (!_allData.ContainsKey(word))
+                    {
+                        _allData.Add(word, 1);
+                    }
+                    else
+                    {
+                        _allData[word] += 1;
+                    }
                 }
             }
-            return _allData;
         }
 
         private static List<string> ReadAllFileName(string folderName, string searchPattern)
         {
+            if (!Directory.Exists(folderName)) 
+            {
+                throw new DirectoryNotFoundException($"Folder {folderName} not found.");
+            }
             var fileList = Directory.EnumerateFiles(folderName, searchPattern);
             return fileList.ToList();
         }
