@@ -30,15 +30,12 @@ namespace Task
 
             foreach (var word in allWords)
             {
-                if (!_allData.ContainsKey(word.Word))
+                var count = word.Count;
+                _allData.AddOrUpdate(word.Word, word.Count,
+                (string key, int value) =>
                 {
-                    _allData.TryAdd(word.Word, word.Count);
-                }
-                else
-                {
-                    _allData[word.Word] += word.Count;
-                }
-
+                    return count += value;
+                });
             }
         }
 
