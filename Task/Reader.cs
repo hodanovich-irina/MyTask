@@ -25,19 +25,19 @@ namespace Task
             var regex = new Regex(pattern);
 
             var allWords = Regex.Split(line, pattern).Where(x => x != string.Empty)
-                .Select(x => x.ToLower());
+                .GroupBy(x=>x.ToLower()).Select(x => new { Word = x.Key, Count = x.Count()});
 
             foreach (var word in allWords)
             {
                 lock (_lock)
                 {
-                    if (!_allData.ContainsKey(word))
+                    if (!_allData.ContainsKey(word.Word))
                     {
-                        _allData.Add(word, 1);
+                        _allData.Add(word.Word, word.Count);
                     }
                     else
                     {
-                        _allData[word] += 1;
+                        _allData[word.Word] += word.Count;
                     }
                 }
             }
