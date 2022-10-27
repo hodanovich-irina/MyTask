@@ -1,12 +1,13 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Collections.Concurrent;
+using System.Text.RegularExpressions;
 
 namespace Task
 {
     public static class Reader
     {
-        private static Dictionary<string, int> _allData = new Dictionary<string, int>();
-        private static readonly object _lock = new object();
-        public async static Task<Dictionary<string, int>> ReadDataWithTasksAsync(string folderName, string searchPattern)
+        private static ConcurrentDictionary<string, int> _allData = new ConcurrentDictionary<string, int>();
+
+        public async static Task<ConcurrentDictionary<string, int>> ReadDataWithTasksAsync(string folderName, string searchPattern)
         {
             var allFiles = ReadAllFileName(folderName, searchPattern);
             var tasks = new System.Threading.Tasks.Task[allFiles.Count];
@@ -29,17 +30,15 @@ namespace Task
 
             foreach (var word in allWords)
             {
-                lock (_lock)
+                if (!_allData.ContainsKey(word.Word))
                 {
-                    if (!_allData.ContainsKey(word.Word))
-                    {
-                        _allData.Add(word.Word, word.Count);
-                    }
-                    else
-                    {
-                        _allData[word.Word] += word.Count;
-                    }
+                    _allData.TryAdd(word.Word, word.Count);
                 }
+                else
+                {
+                    _allData[word.Word] += word.Count;
+                }
+
             }
         }
 
