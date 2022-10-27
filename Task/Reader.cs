@@ -29,7 +29,6 @@ namespace Task
 
             foreach (var word in allWords)
             {
-                var count = allWords.Where(x => x == word).Count();
                 lock (_lock)
                 {
                     if (!_allData.ContainsKey(word))
